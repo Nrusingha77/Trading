@@ -17,7 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Invalid email address").refine((val) => !val.includes("*"), {
+    message: "Please enter a valid, unmasked email address.",
+  }),
 });
 const ForgotPasswordForm = () => {
   const [verificationType, setVerificationType] = useState("EMAIL");
@@ -30,10 +32,23 @@ const ForgotPasswordForm = () => {
     },
   });
   const onSubmit = (data) => {
+    // 1. BLOCK masked emails explicitly
+    if (data.email.includes("*")) {
+      form.setError("email", {
+        type: "manual",
+        message: "Invalid email: Please enter your actual email address, not the masked version (****)."
+      });
+      return;
+    }
+
     data.navigate = navigate;
     dispatch(
       sendResetPasswordOTP({ 
-        sendTo: data.email, navigate, verificationType })
+        email: data.email, // 2. Ensure 'email' is sent (Backend DTO expects 'email')
+        sendTo: data.email, 
+        navigate, 
+        verificationType 
+      })
     );
     console.log("login form", data);
   };

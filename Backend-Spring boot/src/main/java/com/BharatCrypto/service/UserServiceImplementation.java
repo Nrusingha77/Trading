@@ -49,7 +49,7 @@ public class UserServiceImplementation implements UserService {
         if (user != null) {
             return user;
         }
-        throw new UserException("user not exist with username " + email);
+        throw new UserException("user not exist with email " + email);
     }
 
     @Override

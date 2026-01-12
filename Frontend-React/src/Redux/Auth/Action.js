@@ -8,6 +8,9 @@ export const register = (userData) => async (dispatch) => {
     if (data.jwt) {
       localStorage.setItem("jwt", data.jwt);
       dispatch({ type: types.REGISTER_SUCCESS, payload: data });
+      if (userData.navigate) {
+        userData.navigate("/");
+      }
     }
     console.log("register success", data);
   } catch (error) {
@@ -31,6 +34,11 @@ export const login = (userData) => async (dispatch) => {
 };
 
 export const getUser = (jwt) => async (dispatch) => {
+  // ✅ FIX: Stop if no token is provided. Prevents 403 errors on initial load.
+  if (!jwt) {
+    return;
+  }
+
   dispatch({ type: types.GET_USER_REQUEST });
   try {
     const { data } = await api.get(`/api/users/profile`, {
@@ -164,6 +172,12 @@ export const logout = () => (dispatch) => {
 
 export const sendResetPasswordOTP = (reqData) => async (dispatch) => {
   dispatch({ type: types.SEND_RESET_PASSWORD_OTP_REQUEST });
+  if (reqData.email && reqData.email.includes("*")) {
+    console.error("Blocked attempt to send masked email:", reqData.email);
+    dispatch({ type: types.SEND_RESET_PASSWORD_OTP_FAILURE, payload: "Please enter your actual email address, not the masked version." });
+    return;
+  }
+
   try {
     const { data } = await api.post(
       `/auth/users/reset-password/send-otp`,

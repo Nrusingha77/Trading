@@ -33,6 +33,7 @@ public class AppConfig {
 	                .authorizeHttpRequests(Authorize -> Authorize
 	                		.requestMatchers("/auth/signup").permitAll()
 	                                .requestMatchers("/auth/login").permitAll()
+	                                .requestMatchers("/auth/users/**").permitAll()
 	                                .requestMatchers("/auth/forgot-password").permitAll()
 	                                .requestMatchers("/auth/reset-password").permitAll()
 	                                .requestMatchers("/auth/verify-otp").permitAll()

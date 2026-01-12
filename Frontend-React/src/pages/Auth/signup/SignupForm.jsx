@@ -18,7 +18,9 @@ import SpinnerBackdrop from "@/components/custome/SpinnerBackdrop";
 
 const formSchema = z.object({
   fullName: z.string().nonempty("Full name is required"),
-  email: z.string().email("Invalid email address").optional(),
+  email: z.string().email("Invalid email address").refine((val) => !val.includes("*"), {
+    message: "Email cannot contain masked characters (*).",
+  }),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters long")

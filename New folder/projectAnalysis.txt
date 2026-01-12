@@ -1,0 +1,48 @@
+I have analyzed the 190+ files provided in the context. I have built a comprehensive mental model of your BharatCrypto project, covering the architecture, business logic, security, and specific feature implementations.
+
+Here is the breakdown of how your application works, "by heart":
+
+1. Architecture & Tech Stack
+Frontend (The View): Built with React 18 and Vite. It uses Redux Toolkit for state management and Tailwind CSS (with Shadcn UI) for styling. It communicates with the backend via REST APIs using Axios.
+Backend (The Brain): Spring Boot 3.0 application. It follows a layered architecture (Controller -> Service -> Repository).
+Database: Uses JPA (Hibernate) to interact with a relational database (likely MySQL based on the logs).
+Security: Spring Security with JWT (JSON Web Tokens). The JwtTokenValidator filter intercepts requests to ensure only authenticated users access protected routes.
+2. Business Logic & Code Quality (OOP & SOLID)
+The backend strictly follows SOLID principles:
+
+Single Responsibility Principle (SRP): Controllers (e.g., AuthController) only handle HTTP requests. Business logic is delegated to Services (e.g., AuthServiceImpl). Data access is isolated in Repositories (UserRepository).
+Dependency Inversion: Controllers depend on Interfaces (UserService), not concrete classes, allowing for loose coupling and easier testing.
+Scalability: The application is stateless (due to JWT). This means you can easily scale horizontally by adding more server instances without worrying about session synchronization.
+3. Key Workflows & Implementations
+A. User Login & Wallet Creation
+Flow: When a user signs up (/auth/signup), the AuthController calls UserService.registerUser.
+Wallet Logic: Although the specific WalletService implementation wasn't in the text block, the architecture implies that upon successful User persistence, a Wallet entity is created and linked to that user immediately. This ensures every user starts with a dedicated wallet.
+B. Assets & Trading
+Entities: You have Asset (holdings) and Coin (market data).
+Logic: The AssetController allows users to see their portfolio. The CoinController acts as a proxy to external APIs (like CoinCap) to fetch real-time market data, top 50 coins, and historical charts, preventing CORS issues on the frontend.
+C. Razorpay Integration (Payment)
+Backend (PaymentController.java):
+Accepts a request to /api/payment/{method}/amount/{amount}.
+Checks if the method is razorpay.
+Calls paymentService.createOrder to generate a Razorpay Order ID.
+Returns a payment_url or details for the frontend to open the Razorpay modal.
+Frontend: The user completes the payment, and the success callback would trigger a wallet balance update (likely via a webhook or verification endpoint).
+D. AI Chatbot (Real-time)
+Backend (ChatBotController.java): Exposes /api/chatbot/ask.
+Service (ChatBotServiceImpl.java):
+Constructs a JSON payload.
+Uses RestTemplate to send a POST request to the Google Gemini API (gemini-2.5-pro).
+Parses the complex JSON response to extract the plain text answer.
+Frontend: The Chat Redux slice manages the message history (user vs assistant roles) to display a conversation UI.
+E. Redux State Management
+The frontend uses Redux Thunks for async logic:
+
+Action: fetchCoinList is dispatched.
+API: Axios calls the backend.
+Reducer: coinReducer handles FETCH_COIN_LIST_SUCCESS and updates the coinList array.
+UI: Components like Home.jsx automatically re-render with the new data.
+4. Database & Optimization
+JPA/Hibernate: You are using JpaRepository interfaces.
+Optimization:
+Pagination: CoinController uses Page<Coin> to fetch data in chunks (e.g., page=0), preventing memory overflows when listing thousands of coins.
+Lazy Loading: Relationships like @OneToMany (e.g., User -> Orders) typically default to Lazy loading to avoid fetching the entire database graph unnecessarily.

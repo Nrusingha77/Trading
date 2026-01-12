@@ -1,19 +1,20 @@
 package com.BharatCrypto.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.JwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
@@ -23,8 +24,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (shouldSkipJwtValidation(path)) {
-            System.out.println("Skipping JWT validation for path: " + path);
             filterChain.doFilter(request, response);
             return;
         }
@@ -75,7 +81,8 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         return path.startsWith("/auth/signup")
                 || path.startsWith("/auth/login")
-                || path.startsWith("/auth/signin")          // ✅ ADD THIS
+                || path.startsWith("/auth/signin")
+                || path.startsWith("/auth/users/reset-password") // Be specific: only reset-password should be public here
                 || path.startsWith("/auth/forgot-password")
                 || path.startsWith("/auth/reset-password")
                 || path.startsWith("/auth/verify-otp")

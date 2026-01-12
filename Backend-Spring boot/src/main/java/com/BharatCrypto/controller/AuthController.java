@@ -42,6 +42,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@RequestBody SignUpRequest req) throws UserException {
         try {
             System.out.println("📝 Signup request received: " + req.getEmail());
+            if (req.getEmail().contains("*")) {
+                throw new UserException("Invalid email: Masked emails are not allowed.");
+            }
             
 
             User savedUser = userService.registerUser(req);

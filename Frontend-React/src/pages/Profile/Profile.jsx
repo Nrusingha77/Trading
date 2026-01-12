@@ -52,12 +52,22 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchUserProfile());
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
+      dispatch(fetchUserProfile());
+    }
   }, [dispatch]);
 
   useEffect(() => {
     if (auth.user) {
+      console.log("User Profile Data:", auth.user);
+      // DEBUG: Check if email is masked in state
+      if (auth.user.email && auth.user.email.includes("***")) {
+        console.error("CRITICAL: auth.user.email is masked! API calls using this email will fail.", auth.user.email);
+      }
       setFormData({
+        id: auth.user.id,
+        email: auth.user.email,
         fullName: auth.user.fullName || "",
         dateOfBirth: auth.user.dateOfBirth || "",
         nationality: auth.user.nationality || "",
@@ -66,7 +76,6 @@ const Profile = () => {
         postcode: auth.user.postcode || "",
         country: auth.user.country || "",
       });
-      // ✅ Set preview image from backend
       if (auth.user.picture) {
         setPreviewImage(auth.user.picture);
       }
@@ -433,7 +442,21 @@ const Profile = () => {
               </div>
               <div className="flex items-center">
                 <p className="w-[8rem]">Password :</p>
-                <Button variant="secondary">Change Password</Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary">Change Password</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="px-10 pt-5 text-center">Change Password</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <Input placeholder="Current Password" type="password" />
+                      <Input placeholder="New Password" type="password" />
+                      <Button className="w-full">Update Password</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
