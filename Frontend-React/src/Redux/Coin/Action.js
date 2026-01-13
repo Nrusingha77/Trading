@@ -34,12 +34,18 @@ export const fetchCoinList = (page, jwt) => async (dispatch) => {
 };
 
 
-export const fetchCoinById = ({ coinId, jwt }) => async (dispatch) => {
-  return fetchCoinDetails({ coinId, jwt })(dispatch);
+export const fetchCoinById = ({ coinId, jwt }) => async (dispatch, getState) => {
+  return fetchCoinDetails({ coinId, jwt })(dispatch, getState);
 };
 
 
-export const fetchCoinDetails = ({ coinId, jwt }) => async (dispatch) => {
+export const fetchCoinDetails = ({ coinId, jwt }) => async (dispatch, getState) => {
+  const { coin } = getState();
+  if (coin.coinDetails && coin.coinDetails.id === coinId) {
+    console.log(`Using cached details for coin: ${coinId}`);
+    return;
+  }
+
   try {
     dispatch({ type: types.FETCH_COIN_DETAILS_REQUEST });
     
@@ -64,7 +70,12 @@ export const fetchCoinDetails = ({ coinId, jwt }) => async (dispatch) => {
   }
 };
 
-export const getTop50CoinList = (jwt) => async (dispatch) => {
+export const getTop50CoinList = (jwt) => async (dispatch, getState) => {
+  const { coin } = getState();
+  if (coin.top50 && Array.isArray(coin.top50) && coin.top50.length > 0) {
+    console.log("Using cached top 50 coins, skipping fetch.");
+    return;
+  }
   try {
     dispatch({ type: types.GET_TOP_50_REQUEST });
     
@@ -113,29 +124,7 @@ export const searchCoin = (keyword) => async (dispatch) => {
   }
 };
 
-export const fetchTreadingCoinList = (jwt) => async (dispatch) => {
-  try {
-    dispatch({ type: types.FETCH_TRADING_COIN_REQUEST });
-    
-    console.log("Fetching trading coins");
-    
-    const response = await api.get("/api/coins/top50", {
-      headers: { Authorization: `Bearer ${jwt}` }
-    });
-    
-    const coinData = Array.isArray(response.data) ? response.data : [];
-    
-    console.log("Trading coins fetched:", coinData.length, "coins");
-    
-    dispatch({
-      type: types.FETCH_TRADING_COIN_SUCCESS,
-      payload: coinData,
-    });
-  } catch (error) {
-    console.error("Error fetching trading coins:", error.message);
-    dispatch({
-      type: types.FETCH_TRADING_COIN_ERROR,
-      payload: error.message,
-    });
-  }
+export const fetchTreadingCoinList = (jwt) => async (dispatch, getState) => {
+  console.log("fetchTreadingCoinList delegating to getTop50CoinList");
+  return getTop50CoinList(jwt)(dispatch, getState);
 };

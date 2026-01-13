@@ -12,7 +12,6 @@ const StockChart = ({ coinId: propCoinId }) => {
   const [loading, setLoading] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] = useState("1");
 
-  // ✅ Use prop coinId from Home.jsx, fallback to param coinId from URL
   const coinId = propCoinId || paramCoinId;
   const jwt = auth?.jwt || localStorage.getItem("jwt");
 
@@ -28,13 +27,13 @@ const StockChart = ({ coinId: propCoinId }) => {
   useEffect(() => {
     const fetchChartData = async () => {
       if (!coinId || !jwt) {
-        console.warn("⚠️ Missing coinId or JWT:", { coinId, jwt });
+        console.warn("Missing coinId or JWT:", { coinId, jwt });
         return;
       }
 
       setLoading(true);
       try {
-        console.log(`📈 Fetching chart for ${coinId} (${selectedTimeframe} days)`);
+        console.log(`Fetching chart for ${coinId} (${selectedTimeframe} days)`);
 
         const response = await api.get(`/api/coins/${coinId}/chart`, {
           params: { days: selectedTimeframe },
@@ -42,13 +41,13 @@ const StockChart = ({ coinId: propCoinId }) => {
         });
 
         if (response.data && Array.isArray(response.data)) {
-          console.log("✅ Raw chart data received:", response.data.length, "points");
+          console.log("Raw chart data received:", response.data.length, "points");
           
-          // ✅ FIXED: Transform API response [[timestamp, price]] to [{time, price}]
+          
           const transformedData = response.data.map((point) => {
             if (Array.isArray(point) && point.length === 2) {
               return {
-                time: new Date(point[0]).toLocaleTimeString(),
+                time: point[0], 
                 timestamp: point[0],
                 priceUsd: parseFloat(point[1]).toFixed(2),
               };
@@ -56,17 +55,17 @@ const StockChart = ({ coinId: propCoinId }) => {
             return point;
           });
 
-          console.log("✅ Transformed chart data:", transformedData.length, "points");
-          console.log("📊 First point:", transformedData[0]);
-          console.log("📊 Last point:", transformedData[transformedData.length - 1]);
+          console.log("Transformed chart data:", transformedData.length, "points");
+          console.log("First point:", transformedData[0]);
+          console.log("Last point:", transformedData[transformedData.length - 1]);
 
           setChartData(transformedData);
         } else {
-          console.warn("⚠️ Response data is not an array:", response.data);
+          console.warn(" Response data is not an array:", response.data);
           setChartData([]);
         }
       } catch (error) {
-        console.error("❌ Error fetching chart:", {
+        console.error(" Error fetching chart:", {
           message: error.message,
           status: error.response?.status,
           data: error.response?.data,
@@ -87,6 +86,14 @@ const StockChart = ({ coinId: propCoinId }) => {
       </div>
     );
   }
+
+  const dateFormatter = (timestamp) => {
+    const date = new Date(timestamp);
+    if (selectedTimeframe === "1") {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
 
   return (
     <div className="p-5">
@@ -138,6 +145,7 @@ const StockChart = ({ coinId: propCoinId }) => {
                 }}
                 labelStyle={{ color: "#fff" }}
                 formatter={(value) => [`$${value}`, "Price"]}
+                labelFormatter={(label) => dateFormatter(label)} // ✅ Format tooltip label
               />
               <Line
                 type="monotone"
@@ -152,7 +160,7 @@ const StockChart = ({ coinId: propCoinId }) => {
         </div>
       ) : (
         <div className="h-96 flex flex-col items-center justify-center bg-slate-900/50 rounded-lg">
-          <p className="text-slate-400 mb-2">📉 No chart data available</p>
+          <p className="text-slate-400 mb-2"> No chart data available</p>
           <p className="text-slate-500 text-sm">
             {coinId ? `For ${coinId} (${selectedTimeframe} days)` : "Select a coin"}
           </p>

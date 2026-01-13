@@ -183,7 +183,12 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      await dispatch(updateUserProfile(formData));
+      const updateData = {
+        ...formData,
+        id: auth.user?.id,
+        email: auth.user?.email
+      };
+      await dispatch(updateUserProfile(updateData));
       alert("Profile updated successfully!");
       setIsEditing(false);
       await dispatch(fetchUserProfile());

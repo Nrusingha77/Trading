@@ -35,7 +35,7 @@ const StockDetails = () => {
 
   useEffect(() => {
     if (id && auth?.jwt) {
-      console.log("📥 Fetching coin details for:", id);
+      console.log("Fetching coin details for:", id);
       dispatch(
         fetchCoinById({
           coinId: id,
@@ -48,7 +48,7 @@ const StockDetails = () => {
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
     if (jwt) {
-      console.log("📋 Fetching user watchlist");
+      console.log("Fetching user watchlist");
       dispatch(getUserWatchlist());
       dispatch(getUserWallet(jwt));
     }
@@ -56,7 +56,7 @@ const StockDetails = () => {
 
   const handleAddToWatchlist = () => {
     if (coin.coinDetails?.id) {
-      console.log("➕ Adding coin to watchlist:", coin.coinDetails.id);
+      console.log("Adding coin to watchlist:", coin.coinDetails.id);
       dispatch(addItemToWatchlist(coin.coinDetails.id));
     }
   };
@@ -119,7 +119,7 @@ const StockDetails = () => {
                 variant="outline"
                 size="icon"
               >
-                {/* ✅ FIXED: Use watchlist.coins instead of watchlist.items */}
+               
                 {existInWatchlist(watchlist?.coins || [], coin.coinDetails) ? (
                   <BookmarkFilledIcon className="h-6 w-6" />
                 ) : (

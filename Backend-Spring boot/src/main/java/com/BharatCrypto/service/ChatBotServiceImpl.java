@@ -48,9 +48,14 @@ public class ChatBotServiceImpl implements ChatBotService {
             String response = restTemplate.postForObject(url, entity, String.class);
             JsonNode responseNode = objectMapper.readTree(response);
             
-            // Navigate through the JSON to get the text response
-            String botResponse = responseNode.get("candidates").get(0).get("content").get("parts").get(0).get("text").asText();
-            return botResponse;
+            // SDE4 FIX: Defensive coding to handle empty candidates or API errors
+            if (responseNode.has("candidates") && responseNode.get("candidates").size() > 0) {
+                JsonNode candidate = responseNode.get("candidates").get(0);
+                if (candidate.has("content") && candidate.get("content").has("parts")) {
+                     return candidate.get("content").get("parts").get(0).get("text").asText();
+                }
+            }
+            return "I'm sorry, I couldn't process that request at the moment. Please try again.";
         } catch (Exception e) {
             throw new Exception("Failed to get response from Gemini API: " + e.getMessage(), e);
         }

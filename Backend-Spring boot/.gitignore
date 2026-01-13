@@ -47,3 +47,6 @@ src/test/resources/application.yml
 *.p12
 *.key
 *.pem
+
+# Environment Variables
+.env

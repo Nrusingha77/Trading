@@ -19,7 +19,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 const formSchema = yup.object().shape({
   accountHolderName: yup.string().required("Account holder name is required"),
-  ifscCode: yup.string().length(11, "IFSC code must be 11 characters"),
+  ifsc: yup.string().required("IFSC is required").length(11, "IFSC code must be 11 characters"),
   accountNumber: yup.string().required("Account number is required"),
   confirmAccountNumber: yup.string().test({
     name: "match",

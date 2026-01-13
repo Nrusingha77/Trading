@@ -28,7 +28,7 @@ public class CoinController {
     public ResponseEntity<Page<Coin>> getAllCoins(
             @RequestParam(value = "page", defaultValue = "0") Integer page) {
         try {
-            System.out.println("📋 Getting paginated coins from database - page: " + page);
+            System.out.println("Getting paginated coins from database - page: " + page);
             
             if (page > 0) {
                 page = page - 1;
@@ -38,7 +38,7 @@ public class CoinController {
             return new ResponseEntity<>(coins, HttpStatus.OK);
             
         } catch (Exception e) {
-            System.err.println("❌ Error fetching coins: " + e.getMessage());
+            System.err.println("Error fetching coins: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -47,25 +47,26 @@ public class CoinController {
     @GetMapping("/top50")
     public ResponseEntity<List<Coin>> getTop50() {
         try {
-            System.out.println("🏆 Getting top 50 coins from CoinCap API");
+            System.out.println("Getting top 50 coins from CoinCap API");
             List<Coin> coins = coinService.getTop50CoinsByMarketCapRank();
-            System.out.println("✅ Top 50 fetched: " + coins.size() + " coins");
+            System.out.println("Top 50 fetched: " + coins.size() + " coins");
             return new ResponseEntity<>(coins, HttpStatus.OK);
         } catch (Exception e) {
-            System.err.println("❌ Error fetching top 50: " + e.getMessage());
+            System.err.println("Error fetching top 50: " + e.getMessage());
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     
+    @GetMapping("/details/{coinId}")
     public ResponseEntity<Coin> getCoinDetails(@PathVariable String coinId) {
         try {
-            System.out.println("📊 Getting coin details from CoinCap API: " + coinId);
+            System.out.println("Getting coin details from CoinCap API: " + coinId);
             Coin coin = coinService.getCoinDetails(coinId);
             return new ResponseEntity<>(coin, HttpStatus.OK);
         } catch (Exception e) {
-            System.err.println("❌ Error fetching coin details: " + e.getMessage());
+            System.err.println("Error fetching coin details: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -76,11 +77,11 @@ public class CoinController {
             @PathVariable String coinId,
             @RequestParam(value = "days", defaultValue = "1") int days) {
         try {
-            System.out.println("📈 Getting chart data from CoinCap API: " + coinId + " (" + days + " days)");
+            System.out.println("Getting chart data from CoinCap API: " + coinId + " (" + days + " days)");
             JsonNode marketChart = coinService.getMarketChart(coinId, days);
             return ResponseEntity.ok(marketChart);
         } catch (Exception e) {
-            System.err.println("❌ Error fetching chart: " + e.getMessage());
+            System.err.println("Error fetching chart: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -89,12 +90,12 @@ public class CoinController {
     @GetMapping("/search")
     public ResponseEntity<List<Coin>> searchCoin(@RequestParam("q") String keyword) {
         try {
-            System.out.println("🔍 Searching coins from CoinCap API: " + keyword);
+            System.out.println("Searching coins from CoinCap API: " + keyword);
             List<Coin> coins = coinService.searchCoin(keyword);
-            System.out.println("✅ Found " + coins.size() + " search results");
+            System.out.println("Found " + coins.size() + " search results");
             return ResponseEntity.ok(coins);
         } catch (Exception e) {
-            System.err.println("❌ Error searching coins: " + e.getMessage());
+            System.err.println("Error searching coins: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
