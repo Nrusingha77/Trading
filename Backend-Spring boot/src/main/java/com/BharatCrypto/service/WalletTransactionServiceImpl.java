@@ -11,19 +11,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class WalletTransactionServiceImpl implements WalletTransactionService{
+public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Autowired
     private WalletTransactionRepository walletTransactionRepository;
 
-
     @Override
-    public WalletTransaction createTransaction(Wallet wallet,
-                                               WalletTransactionType type,
-                                               String transferId,
-                                               String purpose,
-                                               Long amount
-    ) {
+    public WalletTransaction createTransaction(Wallet wallet, WalletTransactionType type, String transferId, String purpose, Long amount) {
         WalletTransaction transaction = new WalletTransaction();
         transaction.setWallet(wallet);
         transaction.setDate(LocalDate.now());
@@ -37,6 +31,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService{
 
     @Override
     public List<WalletTransaction> getTransactions(Wallet wallet, WalletTransactionType type) {
-        return walletTransactionRepository.findByWalletOrderByDateDesc(wallet);
+        return walletTransactionRepository.findByWalletId(wallet.getId());
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +17,7 @@ import {
 import PaymentDetailsForm from "./PaymentDetailsForm";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getPaymentDetails } from "@/Redux/Withdrawal/Action";
+import { getPaymentDetails } from "@/Redux/Withdrawal/Action"; // Ensure this action exists in Withdrawal/Action.js
 import { maskAccountNumber } from "@/Util/maskAccountNumber";
 
 const PaymentDetails = () => {

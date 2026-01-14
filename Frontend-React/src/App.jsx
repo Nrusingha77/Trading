@@ -63,6 +63,7 @@ dispatch(getUser(localStorage.getItem("jwt")))
             <Route element={<Wallet />} path="/wallet" />
             <Route element={<Withdrawal />} path="/withdrawal" />
             <Route element={<PaymentDetails />} path="/payment-details" />
+            <Route element={<PaymentSuccess />} path="/payment-success" />
             <Route element={<Wallet />} path="/wallet/:order_id" />
             <Route element={<StockDetails />} path="/market/:id" />
             <Route element={<Watchlist />} path="/watchlist" />

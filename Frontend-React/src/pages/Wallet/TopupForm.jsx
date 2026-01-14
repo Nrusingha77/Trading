@@ -58,27 +58,9 @@ const TopupForm = () => {
               id="r1"
             />
             <Label htmlFor="r1">
-              <div className="bg-white rounded-md px-5 py-2 w-32">
+              <div className="bg-white rounded-md px-5 py-2 w-32 left-1/2">
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Razorpay_logo.svg/1200px-Razorpay_logo.svg.png"
-                  alt=""
-                />
-              </div>
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2 rounded-md border p-3 px-5">
-            <RadioGroupItem
-              icon={DotFilledIcon}
-              className="h-9 w-9"
-              iconClassName="h-8 w-8"
-              value="STRIPE"
-              id="r2"
-            />
-            <Label htmlFor="r2">
-              <div className="bg-white rounded-md px-5 py- w-32">
-                <img
-                  className="h-10"
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/768px-Stripe_Logo%2C_revised_2016.svg.png"
                   alt=""
                 />
               </div>

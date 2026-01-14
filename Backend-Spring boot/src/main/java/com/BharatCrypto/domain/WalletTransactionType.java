@@ -6,5 +6,4 @@ public enum WalletTransactionType {
     ADD_MONEY,
     BUY_ASSET,
     SELL_ASSET
-
 }

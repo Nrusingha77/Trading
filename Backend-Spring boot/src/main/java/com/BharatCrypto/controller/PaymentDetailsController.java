@@ -1,6 +1,5 @@
 package com.BharatCrypto.controller;
 
-import com.BharatCrypto.exception.UserException;
 import com.BharatCrypto.model.PaymentDetails;
 import com.BharatCrypto.model.User;
 import com.BharatCrypto.service.PaymentDetailsService;
@@ -22,12 +21,11 @@ public class PaymentDetailsController {
 
     @PostMapping("/payment-details")
     public ResponseEntity<PaymentDetails> addPaymentDetails(
-            @RequestBody PaymentDetails paymentDetailsRequest,
-            @RequestHeader("Authorization") String jwt) throws UserException {
-
+            @RequestHeader("Authorization") String jwt,
+            @RequestBody PaymentDetails paymentDetailsRequest
+    ) throws Exception {
         User user = userService.findUserProfileByJwt(jwt);
-
-        PaymentDetails paymentDetails=paymentDetailsService.addPaymentDetails(
+        PaymentDetails paymentDetails = paymentDetailsService.addPaymentDetails(
                 paymentDetailsRequest.getAccountNumber(),
                 paymentDetailsRequest.getAccountHolderName(),
                 paymentDetailsRequest.getIfsc(),
@@ -39,12 +37,10 @@ public class PaymentDetailsController {
 
     @GetMapping("/payment-details")
     public ResponseEntity<PaymentDetails> getUsersPaymentDetails(
-
-            @RequestHeader("Authorization") String jwt) throws UserException {
-
+            @RequestHeader("Authorization") String jwt
+    ) throws Exception {
         User user = userService.findUserProfileByJwt(jwt);
-
-        PaymentDetails paymentDetails=paymentDetailsService.getUsersPaymentDetails(user);
+        PaymentDetails paymentDetails = paymentDetailsService.getUsersPaymentDetails(user);
         return new ResponseEntity<>(paymentDetails, HttpStatus.CREATED);
     }
 }

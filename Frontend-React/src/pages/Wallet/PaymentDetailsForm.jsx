@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
   Form,
   FormControl,
@@ -12,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
-import { addPaymentDetails } from "@/Redux/Withdrawal/Action";
+import { addPaymentDetails } from "@/Redux/Withdrawal/Action"; // Ensure this action exists
 
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";

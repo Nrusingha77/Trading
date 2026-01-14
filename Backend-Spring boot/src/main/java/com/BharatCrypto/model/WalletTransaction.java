@@ -9,7 +9,6 @@ import java.time.LocalDate;
 @Entity
 @Data
 public class WalletTransaction {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -26,6 +25,4 @@ public class WalletTransaction {
     private String purpose;
 
     private Long amount;
-
-
 }
