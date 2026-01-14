@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AssetTable } from "./AssetTable";
 import { Button } from "@/components/ui/button";
 import StockChart from "../StockDetails/StockChart";
@@ -41,18 +42,18 @@ import SpinnerBackdrop from "@/components/custome/SpinnerBackdrop";
 import MarkdownResponse from "@/components/custome/MarkdownResponse";
 
 const Home = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("all");
   const { coin, chatBot, auth } = useSelector((store) => store);
   const [isBotRelease, setIsBotRelease] = useState(false);
+  const chartRef = useRef(null);
 
-  // ✅ Get JWT from Redux or localStorage
   const getJwt = () => {
     return auth?.jwt || localStorage.getItem("jwt");
   };
 
-  // ✅ Fetch coin list with JWT
   useEffect(() => {
     const jwt = getJwt();
     if (jwt) {
@@ -63,7 +64,6 @@ const Home = () => {
     }
   }, [page, dispatch]);
 
-  // ✅ Fetch Bitcoin details with JWT
   useEffect(() => {
     const jwt = getJwt();
     if (jwt) {
@@ -79,7 +79,6 @@ const Home = () => {
     }
   }, [dispatch]);
 
-  // ✅ Fetch category-specific data with JWT
   useEffect(() => {
     const jwt = getJwt();
     if (!jwt) {
@@ -134,6 +133,17 @@ const Home = () => {
     }
   }, [chatBot.messages]);
 
+  const handleCoinClick = (coinId) => {
+    const jwt = getJwt();
+    if (jwt) {
+      dispatch(fetchCoinDetails({ coinId, jwt }));
+      // Scroll to chart on mobile when a coin is clicked
+      if (chartRef.current && window.innerWidth < 1024) {
+        chartRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   if (coin.loading) {
     return <SpinnerBackdrop />;
   }
@@ -141,25 +151,35 @@ const Home = () => {
   return (
     <div className="relative">
       {/* Mobile View: Chart on top */}
-      <div className="lg:hidden p-3">
+      <div className="lg:hidden p-3" ref={chartRef}>
         <StockChart coinId={coin.coinDetails?.id} />
         <div className="flex gap-5 items-center mt-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <p>{coin.coinDetails?.symbol?.toUpperCase()}</p>
-              <DotIcon className="text-gray-400" />
-              <p className="text-gray-400">{coin.coinDetails?.name}</p>
-            </div>
-            {coin.coinDetails && (
-              <div className="flex items-end gap-2">
-                <p className="text-xl font-bold">
-                  ${parseFloat(coin.coinDetails.priceUsd).toFixed(2)}
-                </p>
-                <p className={`${coin.coinDetails.changePercent24Hr < 0 ? "text-red-600" : "text-green-600"}`}>
-                  <span>({parseFloat(coin.coinDetails.changePercent24Hr).toFixed(2)}%)</span>
-                </p>
+          <div 
+            className="w-full md:w-[60%] md:mx-auto cursor-pointer bg-gradient-to-r from-slate-900 to-slate-800 p-4 rounded-xl border border-slate-700 hover:border-amber-500/50 transition-all duration-300 shadow-lg group relative overflow-hidden"
+            onClick={() => navigate(`/market/${coin.coinDetails?.id}`)}
+          >
+            <div className="flex justify-between items-center relative z-10">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-10 w-10 border border-slate-600">
+                    <AvatarImage src={`https://assets.coincap.io/assets/icons/${coin.coinDetails?.symbol.toLowerCase()}@2x.png`} />
+                  </Avatar>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xl text-white tracking-wide">{coin.coinDetails?.symbol?.toUpperCase()}</span>
+                      <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">{coin.coinDetails?.name}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-white">${coin.coinDetails?.priceUsd ? parseFloat(coin.coinDetails?.priceUsd).toFixed(2) : "0.00"}</span>
+                  <span className={`text-sm font-medium ${coin.coinDetails?.changePercent24Hr < 0 ? "text-red-500" : "text-green-500"}`}>{coin.coinDetails?.changePercent24Hr ? parseFloat(coin.coinDetails?.changePercent24Hr).toFixed(2) : "0.00"}%</span>
+                </div>
               </div>
-            )}
+              <div className="flex flex-col items-end gap-2">
+                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-full px-6 shadow-md transition-transform group-hover:scale-105">Trade</Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -184,6 +204,7 @@ const Home = () => {
           <AssetTable
             category={category}
             coins={category == "all" ? coin.coinList : coin.top50}
+            onCoinClick={handleCoinClick}
           />
           {category == "all" && (
             <Pagination className="border-t py-3">
@@ -249,32 +270,32 @@ const Home = () => {
         <div className="hidden lg:block lg:w-[50%] p-5">
           <StockChart coinId={coin.coinDetails?.id} />
           <div className="flex gap-5 items-center">
-            <div>
-              <div className="flex items-center gap-2">
-                <p>{coin.coinDetails?.symbol?.toUpperCase()}</p>
-                <DotIcon className="text-gray-400" />
-                <p className="text-gray-400">{coin.coinDetails?.name}</p>
-              </div>
-              {coin.coinDetails && (
-                <div className="flex items-end gap-2">
-                  <p className="text-xl font-bold">
-                    ${parseFloat(coin.coinDetails.priceUsd).toFixed(2)}
-                  </p>
-                  <p
-                    className={`${
-                      coin.coinDetails.changePercent24Hr < 0
-                        ? "text-red-600"
-                        : "text-green-600"
-                    }`}
-                  >
-                    <span>
-                      (
-                      {parseFloat(coin.coinDetails.changePercent24Hr).toFixed(2)}
-                      %)
-                    </span>
-                  </p>
+            <div 
+              className="w-full lg:w-[70%] lg:mx-auto cursor-pointer bg-gradient-to-r from-slate-900 to-slate-800 p-4 rounded-xl border border-slate-700 hover:border-amber-500/50 transition-all duration-300 shadow-lg group relative overflow-hidden"
+              onClick={() => navigate(`/market/${coin.coinDetails?.id}`)}
+            >
+              <div className="flex justify-between items-center relative z-10">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-10 w-10 border border-slate-600">
+                      <AvatarImage src={`https://assets.coincap.io/assets/icons/${coin.coinDetails?.symbol.toLowerCase()}@2x.png`} />
+                    </Avatar>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xl text-white tracking-wide">{coin.coinDetails?.symbol?.toUpperCase()}</span>
+                        <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">{coin.coinDetails?.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-white">${coin.coinDetails?.priceUsd ? parseFloat(coin.coinDetails?.priceUsd).toFixed(2) : "0.00"}</span>
+                    <span className={`text-sm font-medium ${coin.coinDetails?.changePercent24Hr < 0 ? "text-red-500" : "text-green-500"}`}>{coin.coinDetails?.changePercent24Hr ? parseFloat(coin.coinDetails?.changePercent24Hr).toFixed(2) : "0.00"}%</span>
+                  </div>
                 </div>
-              )}
+                <div className="flex flex-col items-end gap-2">
+                  <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-full px-6 shadow-md transition-transform group-hover:scale-105">Trade</Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -352,7 +352,7 @@ export const invoices = [
   },
 ];
 
-export function AssetTable({ coins, category }) {
+export function AssetTable({ coins, category, onCoinClick }) {
   const navigate = useNavigate();
 
   // ✅ Safety check: Ensure coins is an array
@@ -377,7 +377,7 @@ export function AssetTable({ coins, category }) {
             <TableRow
               key={item.id}
               className="cursor-pointer"
-              onClick={() => navigate(`/market/${item.id}`)}
+              onClick={() => onCoinClick ? onCoinClick(item.id) : navigate(`/market/${item.id}`)}
             >
               <TableCell className="font-medium flex items-center gap-2">
                 <Avatar className="-z-50">
