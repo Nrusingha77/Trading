@@ -71,22 +71,36 @@ const SideBar = () => {
   };
 
   return (
-    <div className="mt-10 space-y-5">
-      {menu.map((item) => (
-        <div key={item} className="">
-          <SheetClose className="w-full">
-            <Button
-              onClick={() => handleMenuClick(item)}
-              variant="outline"
-              className="flex items-center gap-5 py-6 w-full"
-            >
-              <span className="w-8">{item.icon}</span>
+    <div className="mt-10 h-[85vh] flex flex-col justify-between">
+      <div className="space-y-5 lg:space-y-3 overflow-y-auto flex-1">
+        {menu.filter((item) => item.name !== "Logout").map((item) => (
+          <div key={item.name}>
+            <SheetClose className="w-full">
+              <Button
+                onClick={() => handleMenuClick(item)}
+                variant="outline"
+                className="flex items-center gap-5 py-6 w-full justify-start"
+              >
+                <span className="w-8">{item.icon}</span>
+                <p>{item.name}</p>
+              </Button>
+            </SheetClose>
+          </div>
+        ))}
+      </div>
 
-              <p>{item.name}</p>
-            </Button>
-          </SheetClose>
-        </div>
-      ))}
+      <div className="mt-5 pb-10">
+        <SheetClose className="w-full">
+          <Button
+            onClick={() => handleMenuClick({ name: "Logout", path: "/" })}
+            variant="outline"
+            className="flex items-center gap-5 py-6 w-full justify-start"
+          >
+            <span className="w-8"><ExitIcon className="h-6 w-6" /></span>
+            <p>Logout</p>
+          </Button>
+        </SheetClose>
+      </div>
     </div>
   );
 };

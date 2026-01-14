@@ -28,7 +28,7 @@ public class JwtProvider {
             try {
                 byte[] keyBytes = Base64.getDecoder().decode(JwtConstant.SECRET_BASE64);
                 signingKey = Keys.hmacShaKeyFor(keyBytes);
-                System.out.println("✅ JWT signing key initialized (" + keyBytes.length + " bytes)");
+                System.out.println(" JWT signing key initialized (" + keyBytes.length + " bytes)");
             } catch (IllegalArgumentException e) {
                 throw new IllegalStateException("jwt.secret is not valid base64: " + e.getMessage(), e);
             }

@@ -21,16 +21,20 @@ import {
   uploadProfileImage,
 } from "@/Redux/Auth/Action";
 import SpinnerBackdrop from "@/components/custome/SpinnerBackdrop";
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
-  const fileInputRef = useRef(null); // ✅ Create ref for file input
+  const [errors, setErrors] = useState({});
+  const fileInputRef = useRef(null); 
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
     nationality: "",
+    mobile: "",
     address: "",
     city: "",
     postcode: "",
@@ -38,6 +42,7 @@ const Profile = () => {
   });
   const { auth } = useSelector((store) => store);
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   const handleEnableTwoStepVerification = (otp) => {
     console.log("EnableTwoStepVerification", otp);
@@ -69,6 +74,7 @@ const Profile = () => {
         id: auth.user.id,
         email: auth.user.email,
         fullName: auth.user.fullName || "",
+        mobile: auth.user.mobile || "",
         dateOfBirth: auth.user.dateOfBirth || "",
         nationality: auth.user.nationality || "",
         address: auth.user.address || "",
@@ -80,7 +86,7 @@ const Profile = () => {
         setPreviewImage(auth.user.picture);
       }
     }
-  }, [auth.user]);
+  }, []);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -88,22 +94,34 @@ const Profile = () => {
       ...prevState,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
-  // ✅ Handle image file selection and upload
   const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file");
+      toast({
+        title: "Error",
+        description: "Please select a valid image file",
+        variant: "destructive",
+        duration: 3000,
+      });
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image size must be less than 5MB");
+      toast({
+        title: "Error",
+        description: "Image size must be less than 5MB",
+        variant: "destructive",
+        duration: 3000,
+      });
       return;
     }
 
@@ -128,11 +146,20 @@ const Profile = () => {
         );
         const response = await dispatch(uploadProfileImage(base64String));
         console.log("Upload successful:", response);
-        alert("Profile image uploaded successfully!");
+        toast({
+          title: "Success",
+          description: "Profile image uploaded successfully!",
+          duration: 3000,
+        });
         await dispatch(fetchUserProfile());
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Failed to upload image: " + error.message);
+        toast({
+          title: "Error",
+          description: "Failed to upload image: " + error.message,
+          variant: "destructive",
+          duration: 3000,
+        });
         setPreviewImage(auth.user?.picture || null);
       } finally {
         setImageLoading(false);
@@ -144,7 +171,7 @@ const Profile = () => {
     reader.readAsDataURL(file);
   };
 
-  // ✅ New: Compress image before upload
+
   const compressImage = (base64String) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -174,7 +201,6 @@ const Profile = () => {
     });
   };
 
-  // ✅ FIXED: Trigger file input when button is clicked
   const handleUploadButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -182,18 +208,53 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    setErrors({});
     try {
-      const updateData = {
-        ...formData,
-        id: auth.user?.id,
-        email: auth.user?.email
-      };
+      const { email, ...rest } = formData;
+      
+      // Only include mobile if it has a value, otherwise exclude it to avoid regex validation on empty string
+      if (!rest.mobile || rest.mobile.trim() === "") {
+        delete rest.mobile;
+      }
+      
+      const updateData = { ...rest, id: auth.user?.id };
+
       await dispatch(updateUserProfile(updateData));
-      alert("Profile updated successfully!");
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+        duration: 3000,
+      });
       setIsEditing(false);
       await dispatch(fetchUserProfile());
     } catch (error) {
-      alert("Failed to update profile: " + error.message);
+      console.error("Failed to update profile:", error);
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        if (typeof errorData === "object" && !Array.isArray(errorData)) {
+          setErrors(errorData);
+          toast({
+            title: "Error",
+            description: "Please check the form for errors.",
+            variant: "destructive",
+            duration: 3000,
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to update profile: " + (errorData.message || JSON.stringify(errorData)),
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update profile: " + error.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
     }
   };
 
@@ -202,7 +263,6 @@ const Profile = () => {
   return (
     <div className="flex flex-col items-center mb-5">
       <div className="pt-10 w-full lg:w-[60%]">
-        {/* ✅ Profile Image Section */}
         <Card className="mb-6">
           <CardHeader className="pb-9">
             <CardTitle>Profile Picture</CardTitle>
@@ -231,7 +291,6 @@ const Profile = () => {
 
             {isEditing && (
               <div className="flex flex-col items-center gap-2">
-                {/* ✅ Hidden file input with ref */}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -239,8 +298,6 @@ const Profile = () => {
                   onChange={handleImageChange}
                   className="hidden"
                 />
-
-                {/* ✅ Button triggers file input via onClick */}
                 <Button
                   onClick={handleUploadButtonClick}
                   className="flex items-center gap-2"
@@ -266,111 +323,157 @@ const Profile = () => {
                   <p className="text-gray-500">{auth.user?.email} </p>
                 </div>
                 <div className="flex items-center">
+                  <p className="w-[9rem]">Mobile : </p>
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="mobile"
+                        value={formData.mobile || ""}
+                        onChange={handleFormChange}
+                        maxLength={15}
+                        placeholder="+91..."
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.mobile || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.mobile && <span className="text-red-500 text-xs">{errors.mobile}</span>}
+                  </div>
+                </div>
+                <div className="flex items-center">
                   <p className="w-[9rem]">Full Name : </p>
-                  {isEditing ? (
-                    <Input
-                      name="fullName"
-                      value={formData.fullName || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter full name"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.fullName || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="fullName"
+                        value={formData.fullName || ""}
+                        onChange={handleFormChange}
+                        maxLength={50}
+                        placeholder="Enter full name"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.fullName || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.fullName && <span className="text-red-500 text-xs">{errors.fullName}</span>}
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <p className="w-[9rem]">Date Of Birth : </p>
-                  {isEditing ? (
-                    <Input
-                      type="date"
-                      name="dateOfBirth"
-                      value={formData.dateOfBirth || ""}
-                      onChange={handleFormChange}
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.dateOfBirth || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth || ""}
+                        onChange={handleFormChange}
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.dateOfBirth || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.dateOfBirth && <span className="text-red-500 text-xs">{errors.dateOfBirth}</span>}
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <p className="w-[9rem]">Nationality : </p>
-                  {isEditing ? (
-                    <Input
-                      name="nationality"
-                      value={formData.nationality || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter nationality"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.nationality || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="nationality"
+                        value={formData.nationality || ""}
+                        onChange={handleFormChange}
+                        maxLength={50}
+                        placeholder="Enter nationality"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.nationality || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.nationality && <span className="text-red-500 text-xs">{errors.nationality}</span>}
+                  </div>
                 </div>
               </div>
               <div className="space-y-7">
                 <div className="flex items-center">
                   <p className="w-[9rem]">Address : </p>
-                  {isEditing ? (
-                    <Input
-                      name="address"
-                      value={formData.address || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter address"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.address || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="address"
+                        value={formData.address || ""}
+                        onChange={handleFormChange}
+                        maxLength={255}
+                        placeholder="Enter address"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.address || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.address && <span className="text-red-500 text-xs">{errors.address}</span>}
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <p className="w-[9rem]">City : </p>
-                  {isEditing ? (
-                    <Input
-                      name="city"
-                      value={formData.city || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter city"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.city || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="city"
+                        value={formData.city || ""}
+                        onChange={handleFormChange}
+                        maxLength={50}
+                        placeholder="Enter city"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.city || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <p className="w-[9rem]">Postcode : </p>
-                  {isEditing ? (
-                    <Input
-                      name="postcode"
-                      value={formData.postcode || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter postcode"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.postcode || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="postcode"
+                        value={formData.postcode || ""}
+                        onChange={handleFormChange}
+                        maxLength={12}
+                        placeholder="Enter postcode"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.postcode || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.postcode && <span className="text-red-500 text-xs">{errors.postcode}</span>}
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <p className="w-[9rem]">Country : </p>
-                  {isEditing ? (
-                    <Input
-                      name="country"
-                      value={formData.country || ""}
-                      onChange={handleFormChange}
-                      placeholder="Enter country"
-                    />
-                  ) : (
-                    <p className="text-gray-500">
-                      {auth.user?.country || "Not Set"}
-                    </p>
-                  )}
+                  <div className="w-full">
+                    {isEditing ? (
+                      <Input
+                        name="country"
+                        value={formData.country || ""}
+                        onChange={handleFormChange}
+                        maxLength={50}
+                        placeholder="Enter country"
+                      />
+                    ) : (
+                      <p className="text-gray-500">
+                        {auth.user?.country || "Not Set"}
+                      </p>
+                    )}
+                    {isEditing && errors.country && <span className="text-red-500 text-xs">{errors.country}</span>}
+                  </div>
                 </div>
               </div>
             </div>
@@ -507,6 +610,7 @@ const Profile = () => {
           </Card>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };

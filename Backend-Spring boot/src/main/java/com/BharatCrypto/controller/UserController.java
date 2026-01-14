@@ -4,6 +4,7 @@ import com.BharatCrypto.domain.VerificationType;
 import com.BharatCrypto.exception.UserException;
 import com.BharatCrypto.model.ForgotPasswordToken;
 import com.BharatCrypto.model.User;
+import com.BharatCrypto.request.UpdateUserRequest;
 import com.BharatCrypto.model.VerificationCode;
 import com.BharatCrypto.request.ResetPasswordRequest;
 import com.BharatCrypto.request.UpdatePasswordRequest;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,20 +56,25 @@ public class UserController {
     @PutMapping("/api/users/profile/update")
     public ResponseEntity<User> updateUserProfileHandler(
             @RequestHeader("Authorization") String jwt,
-            @RequestBody User user
+            @RequestBody @Validated UpdateUserRequest req
             ) throws UserException {
-        try {
-            User updatedUser = userService.updateUserProfile(jwt, user);
-            updatedUser.setPassword(null);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK); 
-        } catch (UserException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+        // 1. Fetch the existing user from the database using the JWT
+        User user = userService.findUserProfileByJwt(jwt);
 
-    // ✅ NEW: Endpoint to upload/update user profile image
+        // 2. Update only the fields that are present in the request
+        if (req.getFullName() != null) user.setFullName(req.getFullName());
+        if (req.getMobile() != null) user.setMobile(req.getMobile());
+        if (req.getDateOfBirth() != null) user.setDateOfBirth(req.getDateOfBirth());
+        if (req.getNationality() != null) user.setNationality(req.getNationality());
+        if (req.getAddress() != null) user.setAddress(req.getAddress());
+        if (req.getCity() != null) user.setCity(req.getCity());
+        if (req.getPostcode() != null) user.setPostcode(req.getPostcode());
+        if (req.getCountry() != null) user.setCountry(req.getCountry());
+
+        User updatedUser = userService.updateUserProfile(jwt, user);
+        updatedUser.setPassword(null);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
     @PostMapping("/api/users/profile/upload-image")
     public ResponseEntity<User> uploadProfileImage(
             @RequestHeader("Authorization") String jwt,

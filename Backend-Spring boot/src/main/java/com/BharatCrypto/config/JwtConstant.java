@@ -15,6 +15,6 @@ public class JwtConstant {
             throw new IllegalArgumentException(" jwt.secret is not configured in application.properties");
         }
         JwtConstant.SECRET_BASE64 = secret;
-        System.out.println("✅ JWT secret loaded: " + secret.substring(0, 20) + "...");
+        System.out.println("JWT secret loaded: " + secret.substring(0, 20) + "...");
     }
 }

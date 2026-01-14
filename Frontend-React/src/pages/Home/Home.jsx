@@ -140,6 +140,29 @@ const Home = () => {
 
   return (
     <div className="relative">
+      {/* Mobile View: Chart on top */}
+      <div className="lg:hidden p-3">
+        <StockChart coinId={coin.coinDetails?.id} />
+        <div className="flex gap-5 items-center mt-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <p>{coin.coinDetails?.symbol?.toUpperCase()}</p>
+              <DotIcon className="text-gray-400" />
+              <p className="text-gray-400">{coin.coinDetails?.name}</p>
+            </div>
+            {coin.coinDetails && (
+              <div className="flex items-end gap-2">
+                <p className="text-xl font-bold">
+                  ${parseFloat(coin.coinDetails.priceUsd).toFixed(2)}
+                </p>
+                <p className={`${coin.coinDetails.changePercent24Hr < 0 ? "text-red-600" : "text-green-600"}`}>
+                  <span>({parseFloat(coin.coinDetails.changePercent24Hr).toFixed(2)}%)</span>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="lg:flex ">
         <div className="lg:w-[50%] border-r">
           <div className="p-3 flex items-center gap-4 ">
@@ -256,9 +279,10 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <section className="absolute bottom-5 right-5 z-40 flex flex-col justify-end items-end gap-2">
+      {/* Chat Bot Section - Fixed Position */}
+      <section className="fixed bottom-5 right-5 z-40 flex flex-col justify-end items-end gap-2">
         {isBotRelease && (
-          <div className="rounded-md w-[20rem]  md:w-[25rem] lg:w-[25rem] h-[70vh] bg-slate-900">
+          <div className="rounded-lg w-[20rem] md:w-[25rem] h-[70vh] bg-slate-900 shadow-2xl">
             <div className="flex justify-between items-center border-b px-6 h-[12%]">
               <p>Chat Bot</p>
               <Button onClick={handleBotRelease} size="icon" variant="ghost">
@@ -266,11 +290,12 @@ const Home = () => {
               </Button>
             </div>
 
-            <div className="h-[76%]  flex flex-col overflow-y-auto  gap-5 px-5 py-2 scroll-container">
+            <ScrollArea className="h-[76%]">
+              <div className="flex flex-col gap-5 px-5 py-2">
               <div className="self-start pb-5 w-auto">
                 <div className="justify-end self-end px-5 py-2 rounded-md bg-slate-800 w-auto">
                   {`hi, ${auth.user?.fullName}`}
-                  <p>you can ask crypto related any question</p>
+                  <p>You can ask any crypto-related question.</p>
                   <p>like, price, market cap extra...</p>
                 </div>
               </div>
@@ -296,7 +321,8 @@ const Home = () => {
                 </div>
               ))}
               {chatBot.loading && <p>fetchin data...</p>}
-            </div>
+              </div>
+            </ScrollArea>
 
             <div className="h-[12%] border-t">
               <Input
@@ -311,17 +337,16 @@ const Home = () => {
         )}
         <div
           onClick={handleBotRelease}
-          className="relative w-[10rem] cursor-pointer group"
+          className="relative cursor-pointer group"
         >
-          <Button className="w-full h-[3rem] gap-2 items-center">
+          {/* Round icon button for mobile, larger with text for desktop */}
+          <Button className="rounded-full h-14 w-14 md:h-auto md:w-auto md:px-4 md:py-2 md:gap-2 items-center justify-center">
             <MessageCircle
-              fill=""
-              className="fill-[#1e293b] -rotate-[90deg] stroke-none group-hover:fill-[#1a1a1a] "
+              className="fill-black -rotate-[90deg] stroke-none"
               size={30}
             />
-
-            <span className=" text-2xl">Chat Bot</span>
-          </Button>
+            <span className="hidden md:block text-lg">Chat Bot</span>
+          </Button> 
         </div>
       </section>
     </div>

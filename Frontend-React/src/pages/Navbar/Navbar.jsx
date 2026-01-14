@@ -96,8 +96,8 @@ const MarketTicker = () => {
 
   if (!coins || coins.length === 0) {
     return (
-      <div className="ml-4 hidden lg:flex items-center gap-3">
-        <div className="text-xs text-slate-400">Market</div>
+      <div className="flex items-center gap-3">
+        <div className="text-xs text-slate-400 hidden sm:block">Market</div>
         <div className="px-2 py-1 rounded-md bg-slate-700/40 border border-slate-700 text-sm text-slate-300">
           Loading...
         </div>
@@ -114,20 +114,20 @@ const MarketTicker = () => {
       : "text-rose-400";
 
   return (
-    <div className="ml-4 hidden lg:flex items-center gap-4 select-none">
-      <div className="text-xs text-slate-400">Market</div>
+    <div className="flex items-center gap-2 lg:gap-4 select-none">
+      <div className="text-xs text-slate-400 hidden sm:block">Market</div>
       <div
-        className="flex items-center gap-3 px-3 py-1 rounded-lg border border-slate-700 bg-gradient-to-b from-slate-800/60 to-slate-800/40"
+        className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1 rounded-lg border border-slate-700 bg-gradient-to-b from-slate-800/60 to-slate-800/40"
         title={`${coin.name} (${coin.symbol})`}
       >
         <div className="flex flex-col leading-tight">
           <div className="text-sm font-medium text-slate-100">{coin.symbol?.toUpperCase()}</div>
-          <div className="text-xs text-slate-400 truncate max-w-[10rem]">{coin.name}</div>
+          <div className="text-xs text-slate-400 truncate max-w-[4rem] sm:max-w-[10rem]">{coin.name}</div>
         </div>
 
         <div className="border-l border-slate-700 h-8" />
 
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end min-w-[3.5rem] sm:min-w-[4rem]">
           <div className="text-sm font-semibold text-slate-100">{displayPrice}</div>
           <div className={`text-xs ${changeClass}`}>{isNaN(change) ? "-" : `${change.toFixed(2)}%`}</div>
         </div>
@@ -209,10 +209,18 @@ const Navbar = () => {
               <div className="h-8 w-8 rounded-md flex items-center justify-center bg-gradient-to-br from-amber-500 to-orange-500 text-slate-900 font-bold">
                 BC
               </div>
-              <div className="text-lg lg:text-base text-slate-100 font-semibold hover:opacity-90">
+              <div className="text-lg lg:text-base text-slate-100 font-semibold hover:opacity-90 hidden md:block">
                 Bharat <span className="text-amber-400">Crypto</span>
               </div>
             </button>
+          </div>
+
+          {/* Mobile: Ticker + Search Icon */}
+          <div className="flex md:hidden items-center gap-1 sm:gap-2">
+            <MarketTicker />
+            <Button variant="ghost" size="icon" onClick={() => navigate("/search")} className="text-slate-200">
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </Button>
           </div>
 
           {/* center - search (visible on md+) */}
@@ -245,7 +253,7 @@ const Navbar = () => {
 
             {/* ✅ Avatar with picture from backend or fallback to initials */}
             <Avatar 
-              className="cursor-pointer h-10 w-10 ring-2 ring-amber-500/50 bg-slate-800" 
+              className="cursor-pointer h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-amber-500/50 bg-slate-800" 
               onClick={handleNavigate}
             >
               {!auth.user ? (

@@ -47,7 +47,7 @@ public class CoinServiceImpl implements CoinService {
     private List<Coin> top50Cache = new ArrayList<>();
     private long top50CacheTimestamp = 0;
 
-    // ✅ Cache for Market Charts (Key: coinId_days, Value: Data + Timestamp)
+    // Cache for Market Charts (Key: coinId_days, Value: Data + Timestamp)
     private final Map<String, CachedChartData> chartCache = new ConcurrentHashMap<>();
 
     @Value("${coincap.api.key:}")
@@ -63,7 +63,7 @@ public class CoinServiceImpl implements CoinService {
                 page = 0;
             }
             
-            System.out.println("📋 Fetching paginated coins from CoinCap API - page: " + page);
+            System.out.println("Fetching paginated coins from CoinCap API - page: " + page);
             
             // Fetch from CoinCap API instead of database
             String url = COINCAP_V3_BASE + "/assets?limit=" + PAGE_SIZE + "&offset=" + (page * PAGE_SIZE);
@@ -123,7 +123,7 @@ public class CoinServiceImpl implements CoinService {
 
     @Override
     public JsonNode getMarketChart(String coinId, int days) throws Exception {
-        // ✅ Check Cache First
+        // Check Cache First
         String cacheKey = coinId + "_" + days;
         if (chartCache.containsKey(cacheKey)) {
             CachedChartData cachedData = chartCache.get(cacheKey);
@@ -164,8 +164,8 @@ public class CoinServiceImpl implements CoinService {
                 }
             }
             System.out.println(" Chart data fetched: " + formattedData.size() + " points");
-            
-            // ✅ Store in Cache
+
+            // Store in Cache
             chartCache.put(cacheKey, new CachedChartData(formattedData, System.currentTimeMillis()));
             
             return formattedData;
@@ -294,22 +294,22 @@ public class CoinServiceImpl implements CoinService {
             this.top50Cache = coins;
             this.top50CacheTimestamp = now;
             
-            // ✅ Save to database to ensure data persistence
+            // Save to database to ensure data persistence
             try {
                 coinRepository.saveAll(coins);
             } catch (Exception e) {
-                System.err.println("⚠️ Failed to save coins to DB: " + e.getMessage());
+                System.err.println("Failed to save coins to DB: " + e.getMessage());
             }
             
             return coins;
         } catch (Exception e) {
-            System.err.println("❌ Error fetching top 50 coins: " + e.getMessage());
+            System.err.println("Error fetching top 50 coins: " + e.getMessage());
             e.printStackTrace();
             throw new Exception("Failed to fetch top 50 coins", e);
         }
     }
 
-    // ✅ Get top 50 as ApiResponse
+    //  Get top 50 as ApiResponse
     @Override
     public ApiResponse getTop50() throws Exception {
         try {
@@ -322,23 +322,23 @@ public class CoinServiceImpl implements CoinService {
         }
     }
 
-    // ✅ Get coin from database by ID (optional, for future optimization)
+    // Get coin from database by ID (optional, for future optimization)
     @Override
     public Coin getCoinById(String coinId) {
         try {
             Coin coin = coinRepository.findById(coinId).orElse(null);
             if (coin == null) {
-                System.out.println("⚠️ Coin not in cache, fetching from API: " + coinId);
+                System.out.println("Coin not in cache, fetching from API: " + coinId);
                 return getCoinDetails(coinId);
             }
             return coin;
         } catch (Exception e) {
-            System.err.println("❌ Error in getCoinById: " + e.getMessage());
+            System.err.println("Error in getCoinById: " + e.getMessage());
             throw new RuntimeException("Failed to fetch coin", e);
         }
     }
 
-    // ✅ Save coin to database (for caching)
+    // Save coin to database (for caching)
     @Override
     public Coin saveCoin(Coin coin) throws Exception {
         try {
@@ -348,12 +348,12 @@ public class CoinServiceImpl implements CoinService {
         }
     }
 
-    // ✅ Fetch JSON data from API
+    // Fetch JSON data from API
     private JsonNode fetchJsonData(String url) throws Exception {
         return objectMapper.readTree(fetchRawJson(url));
     }
 
-    // ✅ Fetch raw JSON with retry logic and better error handling
+    // Fetch raw JSON with retry logic and better error handling
     @Retryable(
             value = {ResourceAccessException.class},
             maxAttempts = 3,
@@ -370,33 +370,33 @@ public class CoinServiceImpl implements CoinService {
             }
             
             HttpEntity<String> entity = new HttpEntity<>(headers);
-            System.out.println("📡 Making HTTP request to: " + url);
+            System.out.println("Making HTTP request to: " + url);
             
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("✅ HTTP 200 - API Response received");
+                System.out.println("HTTP 200 - API Response received");
                 return response.getBody();
             } else {
-                System.err.println("❌ HTTP " + response.getStatusCodeValue() + " - " + response.getBody());
+                System.err.println("HTTP " + response.getStatusCodeValue() + " - " + response.getBody());
                 throw new Exception("API returned status: " + response.getStatusCode());
             }
         } catch (HttpClientErrorException e) {
-            System.err.println("❌ Client Error (" + e.getStatusCode() + "): " + e.getResponseBodyAsString());
+            System.err.println("Client Error (" + e.getStatusCode() + "): " + e.getResponseBodyAsString());
             throw new Exception("HTTP " + e.getStatusCode() + ": " + e.getMessage(), e);
         } catch (HttpServerErrorException e) {
-            System.err.println("❌ Server Error (" + e.getStatusCode() + "): " + e.getResponseBodyAsString());
+            System.err.println("Server Error (" + e.getStatusCode() + "): " + e.getResponseBodyAsString());
             throw new Exception("HTTP " + e.getStatusCode() + ": " + e.getMessage(), e);
         } catch (ResourceAccessException e) {
-            System.err.println("⏱️  Resource Access Error - retrying...");
+            System.err.println(" Resource Access Error - retrying...");
             throw e;
         } catch (Exception e) {
-            System.err.println("❌ Unexpected Error: " + e.getMessage());
+            System.err.println("Unexpected Error: " + e.getMessage());
             throw new Exception("Error fetching data from CoinCap API: " + e.getMessage(), e);
         }
     }
 
-    // ✅ Inner class for Cache
+    // Inner class for Cache
     private static class CachedChartData {
         JsonNode data;
         long timestamp;
